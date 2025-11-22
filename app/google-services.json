@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "589326169815",
+    "project_id": "smartvendor-476619",
+    "storage_bucket": "smartvendor-476619.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:589326169815:android:c72b0950ae4fe68841e292",
+        "android_client_info": {
+          "package_name": "com.basebox.smartvendor"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "589326169815-0o3p68o37nrdd8d03qcmkghca0jjad3q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.basebox.smartvendor",
+            "certificate_hash": "ab1e4e52ad3310158275b7626a34603fa4dbb023"
+          }
+        },
+        {
+          "client_id": "589326169815-6ppavblph6qmr37ckaqjb2ntd1lu76b7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-L7ga2aGqaiB_6fw8B_ctzIpvC6Y4AR8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "589326169815-6ppavblph6qmr37ckaqjb2ntd1lu76b7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
