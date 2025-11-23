@@ -14,6 +14,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.basebox.smartvendor.R
 import com.basebox.smartvendor.ui.viewmodels.AuthViewModel
 
@@ -26,6 +27,8 @@ fun LoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var navController by remember { mutableStateOf<NavController?>(null) }
+
 
     Column(
         modifier = Modifier
@@ -69,7 +72,13 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { viewModel.loginVendor(email, password, onLoginSuccess, onError = {}) },
+            onClick = { viewModel.loginVendor(email, password, onSuccess = {
+                onLoginSuccess
+                // Handle successful login
+                // For example, navigate to the home screen
+                navController?.navigate("home")
+
+            }, onError = {}) },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
         ) {

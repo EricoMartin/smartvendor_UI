@@ -59,7 +59,7 @@ fun Navigation(
                 })
             }
         }
-        if (authState == null) {
+
             composable("onboarding") {
                 OnboardingScreen(onFinished = { navController.navigate("signup") })
             }
@@ -97,7 +97,7 @@ fun Navigation(
                     onSignUpClicked = { navController.navigate("signup") }
                 )
             }
-        }
+
         composable("home") {
             HomeScreen(homeViewModel, authState!!.uid,  vendorViewModel, authViewModel, inventoryViewModel, notificationsViewModel, settingsViewModel )
         }

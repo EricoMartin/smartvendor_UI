@@ -1,5 +1,7 @@
 package com.basebox.smartvendor.ui.screens.insights
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -22,15 +24,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.basebox.smartvendor.R
+import com.basebox.smartvendor.ui.viewmodels.HomeViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.basebox.smartvendor.ui.viewmodels.InventoryViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun InsightsScreen() {
+fun InsightsScreen(homeViewModel: HomeViewModel = hiltViewModel(), inventoryViewModel: InventoryViewModel = hiltViewModel()) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text("Profit Trend", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Text("Profit Trend", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(24.dp))
 
         // Profit Trend Chart
@@ -58,10 +65,34 @@ fun InsightsScreen() {
                 Column {
                     Text("Best-selling products", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
-                    LegendItem(color = Color(0xFF4CAF50), text = "A")
-                    LegendItem(color = Color(0xFF81C784), text = "B")
-                    LegendItem(color = Color(0xFFA5D6A7), text = "C")
-                }
+                    if (homeViewModel.dashboardState.collectAsState().value?.topItems?.isNotEmpty() == true) {
+                        LegendItem(
+                            color = Color(0xFF4CAF50),
+                            text = "${homeViewModel.dashboardState.collectAsState().value?.topItems[0]?.name ?: "No data"}"
+                        )
+                        LegendItem(
+                            color = Color(0xFF81C784),
+                            text = "${homeViewModel.dashboardState.collectAsState().value?.topItems[1]?.name ?: "No data"}"
+                        )
+                        LegendItem(
+                            color = Color(0xFFA5D6A7),
+                            text = "${homeViewModel.dashboardState.collectAsState().value?.topItems[2]?.name ?: "No data"}"
+                        )
+                    } else {
+                        LegendItem(
+                            color = Color(0xFF4CAF50),
+                            text =  "No data"
+                        )
+                        LegendItem(
+                            color = Color(0xFF81C784),
+                            text =  "No data"
+                        )
+                        LegendItem(
+                            color = Color(0xFFA5D6A7),
+                            text =  "No data"
+                        )
+                    }
+                    }
             }
         }
 
@@ -79,7 +110,7 @@ fun InsightsScreen() {
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
                     Text("Restock forecast", style = MaterialTheme.typography.titleMedium)
-                    Text("You'll run out of Peak Milk in 3 days")
+                    Text("You'll run out of ${inventoryViewModel.lowStockItems.collectAsState().value.firstOrNull()?.name ?: "N/A"} soon.")
                 }
             }
         }
@@ -94,6 +125,7 @@ fun InsightsScreen() {
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Text("AI Tips", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(16.dp))
+            Text(homeViewModel.dashboardState.collectAsState().value?.aiSuggestion ?: "No insights yet", modifier = Modifier.padding(16.dp))
         }
     }
 }

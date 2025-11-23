@@ -124,7 +124,7 @@ fun StocksScreen(
             modifier = Modifier
                 .padding(16.dp)
         ) {
-            Text("Stocks", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+            Text("Stocks", fontSize = 20.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(24.dp))
             // 🔍 Search Field
             SearchBar(search = search, onChange = { search = it })

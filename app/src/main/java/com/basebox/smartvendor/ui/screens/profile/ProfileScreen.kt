@@ -47,7 +47,7 @@ fun ProfileScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text("Profile", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Text("Profile", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(24.dp))
 
         // ---------- PROFILE HEADER ----------

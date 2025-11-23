@@ -119,7 +119,7 @@ fun SalesScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            Text("Receipt Scan", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+            Text("Receipt Scan", fontSize = 20.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(24.dp))
 
             Card(

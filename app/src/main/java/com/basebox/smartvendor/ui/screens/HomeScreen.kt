@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.basebox.smartvendor.ui.screens.auth.LoginScreen
+import com.basebox.smartvendor.ui.screens.auth.SignUpScreen
 import com.basebox.smartvendor.ui.screens.components.BottomNavigationBar
 import com.basebox.smartvendor.ui.screens.dashboard.DashboardScreen
 import com.basebox.smartvendor.ui.screens.insights.InsightsScreen
@@ -53,6 +55,7 @@ fun HomeScreen(
 
     val vendor by vendorViewModel.vendorState.collectAsState()
     val scrollState = rememberScrollState()
+    val authState by authViewModel.authState.collectAsState()
 
     LaunchedEffect(vendorId) {
         vendorViewModel.loadVendor(vendorId)
@@ -76,6 +79,22 @@ fun HomeScreen(
             startDestination = "home",
             modifier = Modifier.padding(paddingValues)
         ) {
+            if (authState == null) {
+                composable("login") {
+                    LoginScreen(
+                        viewModel = authViewModel,
+                        onLoginSuccess = {
+
+                            navController.navigate("home") {
+                                popUpTo("login") {
+                                    inclusive = true
+                                }
+                            }
+                        },
+                        onSignUpClicked = { navController.navigate("signup") }
+                    )
+                }
+            }
             composable("home") {
                 DashboardScreen(
                     viewModel,
@@ -90,7 +109,7 @@ fun HomeScreen(
                 SalesScreen(viewModel, inventoryViewModel, vendorId)
             }
             composable("insights") {
-                InsightsScreen()
+                InsightsScreen(viewModel, inventoryViewModel)
             }
             composable("stock") {
                 StocksScreen(inventoryViewModel)
@@ -117,6 +136,25 @@ fun HomeScreen(
 
             composable("notifications") { NotificationsScreen(navController, notificationsViewModel) }
             composable("settings") { SettingsScreen(settingsViewModel, authViewModel) }
+            composable("signup") {
+                SignUpScreen(
+                    viewModel = authViewModel,
+                    onSignUp =
+                        { name, shopName, phone, email, password ->
+                            authViewModel.registerVendor(
+                                fullName = name,
+                                email = email,
+                                phone = phone,
+                                businessName = shopName,
+                                password = password,
+                                onSuccess = { navController.navigate("login") },
+                                onError = { /* Handle error */ })
+
+//                    if (authState != null) navController.navigate("home") { popUpTo("signup") { inclusive = true } }
+                        },
+                    onLoginClicked = { navController.navigate("login") }
+                )
+            }
         }
     }
 }

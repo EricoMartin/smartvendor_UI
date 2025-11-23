@@ -70,6 +70,7 @@ class AuthViewModel @Inject constructor(
                         .addOnSuccessListener { doc ->
                             if (doc.exists()) {
                                 onSuccess()
+
                             } else {
                                 onError("Vendor profile not found. Contact support.")
                             }
@@ -81,5 +82,6 @@ class AuthViewModel @Inject constructor(
 
     fun signOut() {
         authRepository.signOut()
+        _authState.value = null
     }
 }

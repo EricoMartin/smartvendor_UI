@@ -85,6 +85,10 @@ class InventoryRepository @Inject constructor(
             .collection("inventory")
             .add(data)
             .await()
+
+        db.collection("analytics").document(vendorId)
+            .update("totalAvailable", FieldValue.increment(stock.toLong()))
+            .await()
     }
 
     fun getLowStockItems(vendorId: String): Flow<List<InventoryItem>> =
@@ -120,15 +124,17 @@ class InventoryRepository @Inject constructor(
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun recordSale(vendorId: String, item: InventoryItem, qty: Int, price: Double = 0.0) {
         item.sellingPrice = price
+        if (item.price == 0.0) item.price = price * 0.8
+
         item.costPrice = item.price
 
         val revenue = item.sellingPrice * qty
         val cost = item.costPrice * qty
         val profit = revenue - cost
 
-        item.price = price
+//        item.price = price
 
-        val amount = item.price * qty
+        val amount = price * qty
         val saleData = mapOf(
             "item" to item.name,
             "vendorId" to vendorId,
@@ -165,7 +171,6 @@ class InventoryRepository @Inject constructor(
         analyticsRef.update(
             "totalRevenue", FieldValue.increment(revenue),
             "totalProfit", FieldValue.increment(profit),
-            "dailySales.${todayKey()}", FieldValue.increment(amount.toDouble()),
             "itemsSold", FieldValue.increment(qty.toLong()),
             "lastUpdated", FieldValue.serverTimestamp()
         ).await()

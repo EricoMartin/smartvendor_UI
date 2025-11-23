@@ -109,7 +109,7 @@ fun DashboardScreen(
         } else {
             Text(
                 text = "Hi,\n${vendor?.businessName}!",
-                fontSize = 28.sp,
+                fontSize = 20.sp,
                 lineHeight = 32.sp,
                 fontWeight = FontWeight.Bold
             )

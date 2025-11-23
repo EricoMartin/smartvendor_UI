@@ -1,7 +1,6 @@
 package com.basebox.smartvendor.ui.screens.settings
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,18 +9,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -30,7 +25,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -61,18 +55,40 @@ fun SettingsScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         // Account Section
-        Text("ACCOUNT", fontSize = 12.sp, color = Color.Gray, modifier = Modifier.padding(bottom = 8.dp))
-        SettingsRow(icon = Icons.Default.AccountCircle, title = "Account", onClick = { /* Navigate to Account */ })
+        Text(
+            "ACCOUNT",
+            fontSize = 12.sp,
+            color = Color.Gray,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        SettingsRow(
+            icon = Icons.Default.AccountCircle,
+            title = "Account",
+            onClick = { /* Navigate to Account */ })
 
         Spacer(modifier = Modifier.height(16.dp))
         Divider()
         Spacer(modifier = Modifier.height(16.dp))
 
         // More Section
-        Text("MORE", fontSize = 12.sp, color = Color.Gray, modifier = Modifier.padding(bottom = 8.dp))
-        SettingsRow(icon = Icons.Default.Security, title = "Privacy & Security", onClick = { /* Navigate to Privacy */ })
-        SettingsRow(icon = Icons.Default.Star, title = "Rate the app", onClick = { /* Open Play Store */ })
-        SettingsRow(icon = Icons.Default.Phone, title = "Support", onClick = { /* Navigate to Support */ })
+        Text(
+            "MORE",
+            fontSize = 12.sp,
+            color = Color.Gray,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        SettingsRow(
+            icon = Icons.Default.Security,
+            title = "Privacy & Security",
+            onClick = { /* Navigate to Privacy */ })
+        SettingsRow(
+            icon = Icons.Default.Star,
+            title = "Rate the app",
+            onClick = { /* Open Play Store */ })
+        SettingsRow(
+            icon = Icons.Default.Phone,
+            title = "Support",
+            onClick = { /* Navigate to Support */ })
 
         Spacer(modifier = Modifier.height(16.dp))
         Divider()
@@ -82,7 +98,9 @@ fun SettingsScreen(
         SettingsRow(
             icon = Icons.Default.ExitToApp,
             title = "Sign Out",
-            onClick = { authViewModel.signOut() },
+            onClick = {
+                authViewModel.signOut()
+            },
             iconColor = Color.Red // Make the icon and text red for emphasis
         )
         Spacer(modifier = Modifier.height(16.dp))

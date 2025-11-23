@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -101,7 +102,8 @@ fun CameraCapture(
         modifier = Modifier
             .fillMaxWidth()
             .padding(20.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.Bottom
     ) {
 
         Button(onClick = onClose, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))) {
