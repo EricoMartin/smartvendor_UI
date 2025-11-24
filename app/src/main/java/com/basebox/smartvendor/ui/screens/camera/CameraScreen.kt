@@ -12,6 +12,7 @@ import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -84,87 +85,66 @@ fun CameraCapture(
     LaunchedEffect(lifecycleOwner) {
         cameraController.bindToLifecycle(lifecycleOwner)
     }
-    AndroidView(
-        factory = {
-            PreviewView(it).apply {
-                controller = cameraController
-            }
-        },
-        modifier = Modifier.fillMaxSize()
-    )
-
 
     val output = ImageCapture.OutputFileOptions.Builder(
         imageFile
     ).build()
+    Box(modifier = Modifier.fillMaxSize()) {
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(20.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.Bottom
-    ) {
+        AndroidView(
+            factory = {
+                PreviewView(it).apply {
+                    controller = cameraController
+                }
+            },
+            modifier = Modifier.fillMaxSize()
+        )
 
-        Button(onClick = onClose, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))) {
-            Text("Cancel")
 
-        }
 
-        Button(onClick = {
 
-            cameraController.takePicture(
-                output,
-                executor,
-                object : ImageCapture.OnImageSavedCallback {
-                    override fun onImageSaved(result: ImageCapture.OutputFileResults) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .align(Alignment.BottomCenter),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.Bottom
+        ) {
+
+            Button(
+                onClick = onClose,
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+            ) {
+                Text("Cancel")
+
+            }
+
+            Button(onClick = {
+
+                cameraController.takePicture(
+                    output,
+                    executor,
+                    object : ImageCapture.OnImageSavedCallback {
+                        override fun onImageSaved(result: ImageCapture.OutputFileResults) {
 //                        val uri = FileProvider.getUriForFile(
 //                            context,
 //                            "${context.packageName}.provider",
 //                            imageFile
 //                        )
-                        onPhotoCaptured(result.savedUri!!)
-                    }
+                            onPhotoCaptured(result.savedUri!!)
+                        }
 
-                    override fun onError(exception: ImageCaptureException) {
-                        Log.e("CAM", "Capture Error", exception)
+                        override fun onError(exception: ImageCaptureException) {
+                            Log.e("CAM", "Capture Error", exception)
+                        }
                     }
-                }
-            )
-        }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))) {
-            Text("Capture")
+                )
+            }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))) {
+                Text("Capture")
+            }
         }
     }
-//    cameraController.takePicture(
-//        output, executor,
-//        object : ImageCapture.OnImageSavedCallback {
-//            override fun onImageSaved(result: ImageCapture.OutputFileResults) {
-//                onPhotoCaptured(result.savedUri!!)
-//            }
-//
-//            override fun onError(e: ImageCaptureException) {
-//                Log.e("CAM", "Capture failed", e)
-//            }
-//        }
-//    )
-//    val launcher = rememberLauncherForActivityResult(
-//        contract = ActivityResultContracts.TakePicture()
-//    ) { success ->
-//        if (success) {
-//            onPhotoCaptured(uri)
-//        } else {
-//            onError(ImageCaptureException(
-//                ERROR_CAPTURE_FAILED
-//                ,"Photo capture failed",
-//                null)
-//            )
-//        }
-//    }
-
-//    // Launch camera immediately
-//    LaunchedEffect(Unit) {
-//        launcher.launch(uri)
-//    }
 }
 
 

@@ -110,7 +110,8 @@ fun SalesScreen(
                     inventoryViewModel.recordSale(saleItem, quantity, pricePerUnit)
                     showSaleDialog = false
                     showSaleSuccessDialog = true
-                }
+                },
+                inventoryViewModel
             )
 
         }

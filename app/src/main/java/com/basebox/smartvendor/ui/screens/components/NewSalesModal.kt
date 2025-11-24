@@ -1,5 +1,7 @@
 package com.basebox.smartvendor.ui.screens.components
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -12,20 +14,28 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.basebox.smartvendor.data.local.model.InventoryItem
+import com.basebox.smartvendor.ui.viewmodels.InventoryViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewSalesModal(
     item: InventoryItem,
-//    onItemChange: (InventoryItem) -> Unit,
     onDismiss: () -> Unit,
-    onSaveSale: (name: String, quantity: Int, pricePerUnit: Double) -> Unit
+    onSaveSale: (name: String, quantity: Int, pricePerUnit: Double) -> Unit,
+    inventoryViewModel: InventoryViewModel
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
 
     var quantity by remember { mutableStateOf("") }
     var pricePerUnit by remember { mutableStateOf("") }
-    var itemName by remember { mutableStateOf(item.name) }
+
+    // Load inventory items
+    val inventoryItems by inventoryViewModel.inventory.collectAsState()
+
+    // For dropdown
+    var expanded by remember { mutableStateOf(false) }
+    var selectedItemName by remember { mutableStateOf(item.name) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -43,21 +53,46 @@ fun NewSalesModal(
                 style = MaterialTheme.typography.headlineSmall
             )
 
+            // 👉 If item name provided (e.g. clicked from the list), show static
             if (item.name.isNotEmpty()) {
-                // If item name exists, show it as static text
                 Text(
-                    text = "Item: $itemName",
+                    text = "Item: ${item.name}",
                     style = MaterialTheme.typography.bodyLarge
                 )
             } else {
-                // If item name is empty, provide a text field to enter it
-                OutlinedTextField(
-                    value = itemName,
-                    onValueChange = { itemName = it
-                    },
-                    label = { Text("Item Name") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                // 👉 Dropdown menu to select inventory item
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded }
+                ) {
+                    OutlinedTextField(
+                        value = selectedItemName,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Select Item") },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                        },
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        inventoryItems.forEach { inv ->
+                            DropdownMenuItem(
+                                text = { Text(inv.name) },
+                                onClick = {
+                                    selectedItemName = inv.name
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
             }
 
             OutlinedTextField(
@@ -80,8 +115,8 @@ fun NewSalesModal(
                 onClick = {
                     val qty = quantity.toIntOrNull() ?: 0
                     val price = pricePerUnit.toDoubleOrNull() ?: 0.0
-                    if (qty > 0 && price > 0 && itemName.isNotEmpty()) {
-                        onSaveSale(itemName, qty, price)
+                    if (qty > 0 && price > 0 && selectedItemName.isNotEmpty()) {
+                        onSaveSale(selectedItemName, qty, price)
                         onDismiss()
                     }
                 },
