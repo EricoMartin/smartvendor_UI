@@ -1,9 +1,11 @@
 package com.basebox.smartvendor.data.repository
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.basebox.smartvendor.data.local.model.InventoryItem
 import com.basebox.smartvendor.data.local.model.Product
+import com.basebox.smartvendor.data.local.model.Sales
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -166,6 +168,7 @@ class InventoryRepository @Inject constructor(
                 "category", item.category,
             )
 
+        Log.d("SV", "Recording sale for itemId='${item.id}'")
         // Update analytics
         val analyticsRef = db.collection("analytics").document(vendorId)
         analyticsRef.update(
@@ -175,6 +178,31 @@ class InventoryRepository @Inject constructor(
             "lastUpdated", FieldValue.serverTimestamp()
         ).await()
     }
+
+    suspend fun recordManualSale(
+        vendorId: String,
+        name: String,
+        qty: Int,
+        price: Double
+    ) {
+        val amount = price * qty
+
+        val saleData = mapOf(
+            "item" to name,
+            "vendorId" to vendorId,
+            "quantity" to qty,
+            "amount" to amount,
+            "timestamp" to Timestamp.now(),
+            "type" to "MANUAL"
+        )
+
+        db.collection("vendors")
+            .document(vendorId)
+            .collection("sales")
+            .add(saleData)
+            .await()
+    }
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getTodaysProfit(vendorId: String): Double {
@@ -212,4 +240,26 @@ class InventoryRepository @Inject constructor(
         return today.toString()  // "2025-11-21"
     }
 
+    fun getTodaysSales(vendorId: String): Flow<List<Sales>> = callbackFlow {
+        val startOfDay = com.google.firebase.Timestamp(
+            java.util.Date.from(LocalDate.now().atStartOfDay(java.time.ZoneId.systemDefault()).toInstant())
+        )
+
+        val listener = db.collection("vendors")
+            .document(vendorId)
+            .collection("sales")
+            .whereGreaterThanOrEqualTo("timestamp", startOfDay)
+            .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING) // Show newest first
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+
+                val salesList = snapshot?.toObjects(Sales::class.java) ?: emptyList()
+                trySend(salesList)
+            }
+
+        awaitClose { listener.remove() }
+    }
 }

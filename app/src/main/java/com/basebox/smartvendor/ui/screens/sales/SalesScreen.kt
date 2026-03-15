@@ -3,6 +3,7 @@ package com.basebox.smartvendor.ui.screens.sales
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -40,8 +43,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.basebox.smartvendor.ui.screens.camera.CameraScreen
 import com.basebox.smartvendor.ui.screens.components.NewSalesModal
+import com.basebox.smartvendor.ui.screens.components.SaleItem
 import com.basebox.smartvendor.ui.viewmodels.HomeViewModel
 import com.basebox.smartvendor.ui.viewmodels.InventoryViewModel
+import java.util.UUID
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -55,6 +60,8 @@ fun SalesScreen(
     val newItem by inventoryViewModel.state.collectAsState()
     var showReceiptSuccessDialog by remember { mutableStateOf(false) }
     var showSaleSuccessDialog by remember { mutableStateOf(false) }
+    val sales by inventoryViewModel.todaysSales.collectAsState()
+
 
     if (showReceiptSuccessDialog) {
         AlertDialog(
@@ -104,10 +111,9 @@ fun SalesScreen(
                     showSaleDialog = false
                     inventoryViewModel.resetNewItemState()
                 },
-                onSaveSale = { name, quantity, pricePerUnit ->
-                    // Construct the item to be saved here
-                    val saleItem = newItem.copy(name = name)
-                    inventoryViewModel.recordSale(saleItem, quantity, pricePerUnit)
+                onSaveSale = { newItem, name, quantity, pricePerUnit ->
+
+                    inventoryViewModel.recordSale(newItem, quantity, pricePerUnit)
                     showSaleDialog = false
                     showSaleSuccessDialog = true
                 },
@@ -169,52 +175,103 @@ fun SalesScreen(
 //                color = Color.Gray
 //            )
             Spacer(modifier = Modifier.height(8.dp))
-            Card(
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5)),
-                modifier = Modifier.align(Alignment.Start)
-            ) {
-//                Text(
-//                    text = "Your profit this week is ₦32,500 — up 12% from last week.",
-//                    modifier = Modifier.padding(12.dp)
-//                )
-            }
+//            Card(
+//                shape = RoundedCornerShape(12.dp),
+//                colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5)),
+//                modifier = Modifier.align(Alignment.Start)
+//            ) {
+////                Text(
+////                    text = "Your profit this week is ₦32,500 — up 12% from last week.",
+////                    modifier = Modifier.padding(12.dp)
+////                )
+//            }
 
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Bottom input actions
-//            ChatInputButton(text = "Show low-stock items", icon = Icons.Default.Mic)
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedButton(
-                onClick = {
-                    // Handle sale click
-                    showSaleDialog = true
-                }, // Correctly call the onDismiss lambda
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(55.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White)
+                    .weight(1f) // List takes up the other half
+                    .padding(horizontal = 6.dp)
             ) {
                 Text(
-                    text = "Manual Sale",
-                    style = MaterialTheme.typography.titleMedium
+                    text = "Today's Sales",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(vertical = 8.dp)
                 )
+
+                // Handle loading state implicitly
+                if (sales.isEmpty()) { // You can refine this with a proper loading state from the ViewModel
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("No sales recorded yet for today.")
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedButton(
+                        onClick = {
+                            // Handle sale click
+                            showSaleDialog = true
+                        }, // Correctly call the onDismiss lambda
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(55.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White)
+                    ) {
+                        Text(
+                            text = "Manual Sale",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color(0xFF4CAF50)
+                        )
+                    }
+                } else {
+
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(bottom = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(sales, key = { sale -> "${sale.itemId}_${sale.timestamp}" }) { sale -> // Use a unique key for performance
+                            SaleItem(sale = sale)
+                        }
+                    }
+                }
+
+//                Spacer(modifier = Modifier.weight(1f))
+
+                // Bottom input actions
+//            ChatInputButton(text = "Show low-stock items", icon = Icons.Default.Mic)
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = {
+                        // Handle sale click
+                        showSaleDialog = true
+                    }, // Correctly call the onDismiss lambda
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(55.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White)
+                ) {
+                    Text(
+                        text = "Manual Sale",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color(0xFF4CAF50)
+                    )
+                }
+            }
+
+        }
+
+        @Composable
+        fun ChatInputButton(text: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
+            OutlinedButton(
+                onClick = { /*TODO*/ },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.DarkGray),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Text(text, modifier = Modifier.weight(1f))
+                Icon(icon, contentDescription = null)
             }
         }
-    }
-}
-
-@Composable
-fun ChatInputButton(text: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    OutlinedButton(
-        onClick = { /*TODO*/ },
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.DarkGray),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
-    ) {
-        Text(text, modifier = Modifier.weight(1f))
-        Icon(icon, contentDescription = null)
     }
 }

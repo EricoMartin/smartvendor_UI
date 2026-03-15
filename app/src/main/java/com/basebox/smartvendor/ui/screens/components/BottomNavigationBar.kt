@@ -22,7 +22,7 @@ data class NavigationItem(val route: String, val icon: ImageVector, val title: S
 @Composable
 fun BottomNavigationBar(navController: NavController) {
     val items = listOf(
-        NavigationItem("home", Icons.Default.Home, "Home"),
+        NavigationItem("dashboard", Icons.Default.Home, "Home"),
         NavigationItem("stock", Icons.Default.Inventory, "Stock"),
         NavigationItem("sales", Icons.Default.Receipt, "Sales"),
         NavigationItem("insights", Icons.Default.Insights, "Insights"),

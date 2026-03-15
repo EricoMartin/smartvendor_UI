@@ -9,19 +9,25 @@ import androidx.lifecycle.viewModelScope
 import com.basebox.smartvendor.data.local.model.InventoryItem
 import com.basebox.smartvendor.data.local.model.NotificationItem
 import com.basebox.smartvendor.data.local.model.Product
+import com.basebox.smartvendor.data.local.model.Sales
 import com.basebox.smartvendor.data.repository.InventoryRepository
 import com.basebox.smartvendor.data.repository.NotificationRepository
 import com.basebox.smartvendor.data.services.NotificationService
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -46,6 +52,9 @@ class InventoryViewModel @Inject constructor(
     private val _state = MutableStateFlow(InventoryItem())
     val state: StateFlow<InventoryItem> = _state.asStateFlow()
 
+    private val userIdFlow: Flow<String?> = flowOf(requireUserId())
+
+
     fun onNewItemChange(item: InventoryItem) {
         _state.value = item
     }
@@ -53,6 +62,20 @@ class InventoryViewModel @Inject constructor(
     fun resetNewItemState() {
         _state.value = InventoryItem()
     }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val todaysSales: StateFlow<List<Sales>> =
+        userIdFlow.flatMapLatest { id ->
+            if (id.isNullOrEmpty()) {
+                flowOf(emptyList())
+            } else {
+                repo.getTodaysSales(id)
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     fun loadTodaysProfit() {
         viewModelScope.launch {
@@ -112,10 +135,13 @@ class InventoryViewModel @Inject constructor(
 
                 // 2. Create and save the notification to Firestore
                 val notification = NotificationItem(
+                    id = UUID.randomUUID().toString(),
                     title = "New Sale! 🤑",
                     body = "You just sold $quantity unit(s) of ${item.name} for ₦${price * quantity}.",
                     type = "SALE"
                 )
+                Log.d("SV", "Inserting notification with id=${notification.id}")
+
                 notificationRepository.addNotification(vendorId, notification)
 
                 // 3. Show a system notification
@@ -127,6 +153,30 @@ class InventoryViewModel @Inject constructor(
             }
         }
     }
+
+//    fun recordManualSale(name: String, quantity: Int, price: Double) {
+//        viewModelScope.launch {
+//            try {
+//                // 1. Record the sale in the inventory repository
+//                repo.recordManualSale(vendorId, name, quantity, price)
+//
+//                // 2. Create and save the notification to Firestore
+//                val notification = NotificationItem(
+//                    title = "New Sale! 🤑",
+//                    body = "You just sold $quantity unit(s) of ${name} for ₦${price * quantity}.",
+//                    type = "SALE"
+//                )
+//                notificationRepository.addNotification(vendorId, notification)
+//
+//                // 3. Show a system notification
+//                notificationService.showSaleNotification(name, quantity)
+//
+//            } catch (e: Exception) {
+//                Log.d("SV", "Error recording sale: $e")
+//                // Handle error
+//            }
+//        }
+//    }
 
     val inventory: StateFlow<List<InventoryItem>> = repo.getInventory(vendorId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

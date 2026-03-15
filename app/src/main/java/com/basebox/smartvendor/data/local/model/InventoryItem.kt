@@ -1,18 +1,24 @@
 package com.basebox.smartvendor.data.local.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.PropertyName
 
+@Entity(tableName = "inventory_items")
 data class InventoryItem(
+    @PrimaryKey
     @DocumentId
-    val id: String = "",
-    val name: String = "",
+    var id: String = "",
+    var name: String = "",
     val imageUrl: String = "",
-    val stock: Int = 0,
+    var stock: Int = 0,
     var price: Double = 0.0,
-    val category: String? = null,
+    var category: String? = null,
     val reorderThreshold: Int = 5,
-    val receiptId: String = "",
+    var receiptId: String = "",
     var costPrice: Double = 0.0,
     var sellingPrice: Double = 0.0,
+    var isSynced: Boolean = false,
 )
+

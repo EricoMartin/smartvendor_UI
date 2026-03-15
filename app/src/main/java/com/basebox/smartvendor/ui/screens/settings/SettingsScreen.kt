@@ -20,6 +20,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,12 +40,22 @@ import com.basebox.smartvendor.ui.viewmodels.SettingsViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    navController: NavController,
     viewModel: SettingsViewModel = hiltViewModel(),
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val settings by viewModel.settingsState.collectAsState()
     var expanded by remember { mutableStateOf(false) }
     val languageOptions = listOf("English", "Pidgin", "Yoruba", "Hausa", "Igbo")
+    val isLoggedOut by authViewModel.isLoggedOut.collectAsState()
+
+    LaunchedEffect(isLoggedOut) {
+        if (isLoggedOut) {
+            navController.navigate("login") {
+                popUpTo(0) // clear entire backstack
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -101,7 +112,7 @@ fun SettingsScreen(
             onClick = {
                 authViewModel.signOut()
             },
-            iconColor = Color.Red // Make the icon and text red for emphasis
+            iconColor = Color.Red
         )
         Spacer(modifier = Modifier.height(16.dp))
         ExposedDropdownMenuBox(

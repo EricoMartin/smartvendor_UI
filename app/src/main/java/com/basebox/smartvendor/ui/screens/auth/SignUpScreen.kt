@@ -4,14 +4,21 @@ package com.basebox.smartvendor.ui.screens.auth
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -25,13 +32,20 @@ fun SignUpScreen(
     onSignUp: (
         nameUser: String, shopNameUser: String,
         phoneUser: String, emailUser: String,
-        passwordUser: String) -> Unit,
+        passwordUser: String,
+            successLoad: () -> Unit,
+            errorLoad: () -> Unit
+            ) -> Unit,
+    onSignUpSuccess: () -> Unit,
     onLoginClicked: () -> Unit) {
     var name by remember { mutableStateOf("") }
     var shopName by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var showPassword by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
+
 
     Column(
         modifier = Modifier
@@ -94,17 +108,50 @@ fun SignUpScreen(
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            modifier = Modifier.fillMaxWidth()
+            singleLine = true,
+            trailingIcon = {
+                val image = if (showPassword)
+                    Icons.Filled.Visibility
+                else Icons.Filled.VisibilityOff
+
+                // Localized description for accessibility services
+                val description = if (showPassword) "Hide password" else "Show password"
+
+                IconButton(onClick = { showPassword = !showPassword }) {
+                    Icon(imageVector = image, description)
+                }
+            },
+            enabled = !isLoading,
+            maxLines = 1
         )
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { onSignUp(name, shopName, phone, email, password) },
+            onClick = {
+                isLoading = true
+                onSignUp(name, shopName, phone, email, password,
+                     {
+                        isLoading = false
+                        onSignUpSuccess()
+                    },
+                    {
+                        isLoading = false
+                    }
+                ) },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
         ) {
-            Text("Sign up with Email")
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = Color.White
+                )
+            } else {
+                Text("Sign up with Email")
+            }
         }
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedButton(

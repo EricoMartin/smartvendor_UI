@@ -1,6 +1,7 @@
 package com.basebox.smartvendor.ui.screens.components
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.basebox.smartvendor.data.local.model.InventoryDraft
 import com.basebox.smartvendor.data.local.model.InventoryItem
 import com.basebox.smartvendor.ui.viewmodels.InventoryViewModel
 
@@ -22,7 +24,7 @@ import com.basebox.smartvendor.ui.viewmodels.InventoryViewModel
 fun NewSalesModal(
     item: InventoryItem,
     onDismiss: () -> Unit,
-    onSaveSale: (name: String, quantity: Int, pricePerUnit: Double) -> Unit,
+    onSaveSale: (inventoryItem: InventoryItem, name: String, quantity: Int, pricePerUnit: Double) -> Unit,
     inventoryViewModel: InventoryViewModel
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
@@ -36,6 +38,7 @@ fun NewSalesModal(
     // For dropdown
     var expanded by remember { mutableStateOf(false) }
     var selectedItemName by remember { mutableStateOf(item.name) }
+    var itemId by remember { mutableStateOf(item.id)}
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -115,8 +118,26 @@ fun NewSalesModal(
                 onClick = {
                     val qty = quantity.toIntOrNull() ?: 0
                     val price = pricePerUnit.toDoubleOrNull() ?: 0.0
+                    val newItem = InventoryItem()
+                    Log.d("SV", "Item ID: $itemId")
+                    Log.d("SV", "Inventory Items: $inventoryItems")
+                    newItem.name = selectedItemName
+
+                    for (items in inventoryItems) {
+                        if (items.name == newItem.name){
+                            newItem.id = items.id
+                            newItem.stock = items.stock - qty
+                            newItem.price = items.price
+                            newItem.category = items.category
+                            newItem.receiptId = items.receiptId
+                            newItem.costPrice = items.costPrice
+                            newItem.sellingPrice = items.sellingPrice
+                            newItem.isSynced = items.isSynced
+                        }
+                    }
                     if (qty > 0 && price > 0 && selectedItemName.isNotEmpty()) {
-                        onSaveSale(selectedItemName, qty, price)
+                        onSaveSale(newItem, selectedItemName, qty, price)
+                        Log.d("SV", "My Inventory Item: $newItem")
                         onDismiss()
                     }
                 },

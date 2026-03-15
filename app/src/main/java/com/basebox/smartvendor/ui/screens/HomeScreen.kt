@@ -18,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -52,109 +53,164 @@ fun HomeScreen(
     settingsViewModel: SettingsViewModel
 ) {
     val navController = rememberNavController()
-
     val vendor by vendorViewModel.vendorState.collectAsState()
-    val scrollState = rememberScrollState()
-    val authState by authViewModel.authState.collectAsState()
+//    val scrollState = rememberScrollState()
+//    val authState by authViewModel.authState.collectAsState()
 
     LaunchedEffect(vendorId) {
         vendorViewModel.loadVendor(vendorId)
     }
+
     Scaffold(
-        topBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(scrollState)
-                    .height(60.dp)
-                    .background(Color(0xFF4CAF50))
-            )
-        },
-        bottomBar = {
-            BottomNavigationBar(navController = navController)
-        }
+        bottomBar = { BottomNavigationBar(navController) }
     ) { paddingValues ->
+
         NavHost(
             navController = navController,
-            startDestination = "home",
+            startDestination = "dashboard",
             modifier = Modifier.padding(paddingValues)
         ) {
-            if (authState == null) {
-                composable("login") {
-                    LoginScreen(
-                        viewModel = authViewModel,
-                        onLoginSuccess = {
 
-                            navController.navigate("home") {
-                                popUpTo("login") {
-                                    inclusive = true
-                                }
-                            }
-                        },
-                        onSignUpClicked = { navController.navigate("signup") }
-                    )
-                }
-            }
-            composable("home") {
+            composable("dashboard") {
                 DashboardScreen(
-                    viewModel,
-                    vendor,
-                    vendorId,
-                    authViewModel,
-                    inventoryViewModel,
-                    navController
+                    viewModel, vendor, vendorId, authViewModel,
+                    inventoryViewModel, navController
                 )
             }
-            composable("sales") {
-                SalesScreen(viewModel, inventoryViewModel, vendorId)
-            }
-            composable("insights") {
-                InsightsScreen(viewModel, inventoryViewModel)
-            }
-            composable("stock") {
-                StocksScreen(inventoryViewModel)
-            }
 
-            composable("Profile") {
-
-                val v = vendor!!
-                ProfileScreen(navController, v.fullName, v.email, v.phone, v.businessName)
-            }
+            composable("sales") { SalesScreen(viewModel, inventoryViewModel, vendorId) }
+            composable("insights") { InsightsScreen(viewModel, inventoryViewModel) }
+            composable("stock") { StocksScreen(inventoryViewModel) }
+            composable("notifications") { NotificationsScreen(navController, notificationsViewModel) }
+            composable("settings") { SettingsScreen(navController, settingsViewModel, authViewModel) }
             composable("receipt/{receiptId}") { backStackEntry ->
                 val receiptId = backStackEntry.arguments?.getString("receiptId") ?: ""
                 ReceiptDetailsScreen(navController, vendorId, receiptId)
             }
-            composable("addInventory/{vendorId}/{receiptId}/{name}/{qty}") {
-                AddToInventoryScreen(
-                    nav = navController,
-                    vendorId = it.arguments?.getString("vendorId")!!,
-                    receiptId = it.arguments?.getString("receiptId")!!,
-                    itemName = it.arguments?.getString("name")!!,
-                    quantity = it.arguments?.getString("qty")!!.toInt()
-                )
-            }
-
-            composable("notifications") { NotificationsScreen(navController, notificationsViewModel) }
-            composable("settings") { SettingsScreen(settingsViewModel, authViewModel) }
-            composable("signup") {
-                SignUpScreen(
-                    viewModel = authViewModel,
-                    onSignUp =
-                        { name, shopName, phone, email, password ->
-                            authViewModel.registerVendor(
-                                fullName = name,
-                                email = email,
-                                phone = phone,
-                                businessName = shopName,
-                                password = password,
-                                onSuccess = { navController.navigate("login") },
-                                onError = { /* Handle error */ })
-
-//                    if (authState != null) navController.navigate("home") { popUpTo("signup") { inclusive = true } }
-                        },
-                    onLoginClicked = { navController.navigate("login") }
-                )
+            composable("profile") {
+                val v = vendor!!
+                ProfileScreen(navController, v.fullName, v.email, v.phone, v.businessName)
             }
         }
     }
 }
+
+
+//@RequiresApi(Build.VERSION_CODES.O)
+//@Composable
+//fun HomeScreen(
+//    viewModel: HomeViewModel,
+//    vendorId: String,
+//    vendorViewModel: VendorViewModel,
+//    authViewModel: AuthViewModel,
+//    inventoryViewModel: InventoryViewModel,
+//    notificationsViewModel: NotificationsViewModel,
+//    settingsViewModel: SettingsViewModel
+//) {
+//    val navController = rememberNavController()
+//
+//    val vendor by vendorViewModel.vendorState.collectAsState()
+//    val scrollState = rememberScrollState()
+//    val authState by authViewModel.authState.collectAsState()
+//
+//    LaunchedEffect(vendorId) {
+//        vendorViewModel.loadVendor(vendorId)
+//    }
+//    Scaffold(
+//        topBar = {
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .verticalScroll(scrollState)
+//                    .height(60.dp)
+//                    .background(Color(0xFF4CAF50))
+//            )
+//        },
+//        bottomBar = {
+//            BottomNavigationBar(navController = navController)
+//        }
+//    ) { paddingValues ->
+//        NavHost(
+//            navController = navController,
+//            startDestination = "home",
+//            modifier = Modifier.padding(paddingValues)
+//        ) {
+//            if (authState == null) {
+//                composable("login") {
+//                    LoginScreen(
+//                        viewModel = authViewModel,
+//                        onLoginSuccess = {
+//
+//                            navController.navigate("home") {
+//                                popUpTo("login") {
+//                                    inclusive = true
+//                                }
+//                            }
+//                        },
+//                        onSignUpClicked = { navController.navigate("signup") }
+//                    )
+//                }
+//            }
+//            composable("home") {
+//                DashboardScreen(
+//                    viewModel,
+//                    vendor,
+//                    vendorId,
+//                    authViewModel,
+//                    inventoryViewModel,
+//                    navController
+//                )
+//            }
+//            composable("sales") {
+//                SalesScreen(viewModel, inventoryViewModel, vendorId)
+//            }
+//            composable("insights") {
+//                InsightsScreen(viewModel, inventoryViewModel)
+//            }
+//            composable("stock") {
+//                StocksScreen(inventoryViewModel)
+//            }
+//
+//            composable("Profile") {
+//
+//                val v = vendor!!
+//                ProfileScreen(navController, v.fullName, v.email, v.phone, v.businessName)
+//            }
+//            composable("receipt/{receiptId}") { backStackEntry ->
+//                val receiptId = backStackEntry.arguments?.getString("receiptId") ?: ""
+//                ReceiptDetailsScreen(navController, vendorId, receiptId)
+//            }
+//            composable("addInventory/{vendorId}/{receiptId}/{name}/{qty}") {
+//                AddToInventoryScreen(
+//                    nav = navController,
+//                    vendorId = it.arguments?.getString("vendorId")!!,
+//                    receiptId = it.arguments?.getString("receiptId")!!,
+//                    itemName = it.arguments?.getString("name")!!,
+//                    quantity = it.arguments?.getString("qty")!!.toInt()
+//                )
+//            }
+//
+//            composable("notifications") { NotificationsScreen(navController, notificationsViewModel) }
+//            composable("settings") { SettingsScreen(settingsViewModel, authViewModel) }
+//            composable("signup") {
+//                SignUpScreen(
+//                    viewModel = authViewModel,
+//                    onSignUp =
+//                        { name, shopName, phone, email, password ->
+//                            authViewModel.registerVendor(
+//                                fullName = name,
+//                                email = email,
+//                                phone = phone,
+//                                businessName = shopName,
+//                                password = password,
+//                                onSuccess = { navController.navigate("login") },
+//                                onError = { /* Handle error */ })
+//
+////                    if (authState != null) navController.navigate("home") { popUpTo("signup") { inclusive = true } }
+//                        },
+//                    onLoginClicked = { navController.navigate("login") }
+//                )
+//            }
+//        }
+//    }
+//}
